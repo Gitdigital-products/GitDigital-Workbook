@@ -1,0 +1,7 @@
+# Create and initialize a repository
+mkdir practice-repo
+cd practice-repo
+git init
+echo "# Practice Repository" > README.md
+git add README.md
+git commit -m "First commit"
