@@ -1,7 +1,7 @@
 
 1. Git Flow (Traditional)
 
-``
+```
 main (production)
   ↓
 develop (integration)
@@ -11,18 +11,18 @@ feature/* (new features)
 release/* (preparing release)
   ↓
 hotfix/* (urgent fixes)
-``
+```
 
 Commands:
 
-``bash
+```bash
 # Feature branches
 git checkout -b feature/user-auth develop
 # Work on feature...
 git checkout develop
 git merge --no-ff feature/user-auth
 git branch -d feature/user-auth
-``
+```
 
 2. GitHub Flow (Simpler)
 
@@ -48,7 +48,7 @@ git checkout main
 git merge feature-x
 # Deletes feature branch if no longer needed
 git branch -d feature-x
-``
+```
 
 Three-Way Merge (Merge Commit)
 
@@ -57,7 +57,7 @@ Three-Way Merge (Merge Commit)
 git checkout main
 git merge --no-ff feature-x
 # Creates merge commit
-``
+```
 
 Rebasing (Clean History)
 
@@ -68,7 +68,7 @@ git rebase main
 
 # Interactive rebase (rewrite history)
 git rebase -i HEAD~3  # Last 3 commits
-``
+```
 
 🚧 Merge Conflicts
 
@@ -90,7 +90,7 @@ git rebase --continue  # or git merge --continue
 # Abort if needed
 git rebase --abort
 git merge --abort
-``
+```
 
 Conflict Resolution Tools
 
@@ -101,7 +101,7 @@ git mergetool
 # Configure VS Code as mergetool
 git config --global merge.tool vscode
 git config --global mergetool.vscode.cmd 'code --wait $MERGED'
-``
+```
 
 🎯 Hands-on Exercises
 
@@ -121,7 +121,7 @@ git checkout main
 
 # View branch difference
 git diff main..exercise-1
-``
+```
 
 Exercise 2: Merge Practice
 
@@ -145,7 +145,7 @@ git merge feature-a
 # Try merging feature-b (will conflict)
 git merge feature-b
 # Resolve conflict and complete merge
-``
+```
 
 Exercise 3: Rebasing Practice
 
@@ -169,20 +169,20 @@ git commit -m "Update main"
 # Rebase feature onto updated main
 git checkout rebase-exercise
 git rebase main
-``
+```
 
 📊 Branch Management Best Practices
 
 Naming Conventions
 
-``
+```
 feature/user-authentication  # New features
 bugfix/login-error           # Bug fixes
 hotfix/security-patch        # Urgent fixes
 release/v1.2.0              # Release preparation
 docs/api-reference          # Documentation
 refactor/database-layer     # Code refactoring
-``
+```
 
 Cleanup Commands
 
@@ -195,7 +195,7 @@ git push origin --delete old-branch
 
 # Prune remote tracking branches
 git fetch --prune
-``
+```
 
 🏗 Real-World Scenario: Feature Development
 
@@ -224,7 +224,7 @@ git pull origin main
 git merge --no-ff feature/new-dashboard
 git push origin main
 git branch -d feature/new-dashboard
-``
+```
 
 🎓 Practice Project
 
@@ -259,7 +259,7 @@ git stash                      # Save changes
 git stash list                 # List stashes
 git stash pop                  # Apply and remove stash
 git stash apply stash@{0}      # Apply specific stash
-``
+```
 
 ⚠️ Common Pitfalls
 
