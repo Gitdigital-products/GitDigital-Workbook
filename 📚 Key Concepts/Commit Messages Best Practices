@@ -1,0 +1,6 @@
+# Conventional Commits format
+git commit -m "feat: add user authentication"
+git commit -m "fix: resolve login timeout issue"
+git commit -m "docs: update installation instructions"
+git commit -m "style: format code according to standards"
+git commit -m "refactor: simplify database connection"
