@@ -1,0 +1,49 @@
+
+Objective
+
+Learn to interpret different states in Git.
+
+Requirements
+
+1. Create a repository with one committed file
+2. Create three files in different states:
+   · Modified file (changes not staged)
+   · New file (untracked)
+   · Staged file (ready to commit)
+3. Use git status to see different states
+4. Use git diff to see changes
+
+Hints
+
+```bash
+# See staged vs unstaged changes:
+git diff           # Shows unstaged changes
+git diff --staged  # Shows staged changes
+```
+
+Solution
+
+```bash
+# Setup
+mkdir status-exercise && cd status-exercise
+git init
+echo "Initial content" > file1.txt
+git add file1.txt
+git commit -m "Initial commit"
+
+# Create files in different states
+echo "Modified content" > file1.txt        # Modified (not staged)
+echo "New file content" > file2.txt        # Untracked
+echo "Staged content" > file3.txt
+git add file3.txt                          # Staged
+
+# Check status
+git status
+
+# See differences
+git diff file1.txt
+git diff --staged file3.txt
+
+# Clean up
+git add file1.txt file2.txt
+git commit -m "Add all files"
