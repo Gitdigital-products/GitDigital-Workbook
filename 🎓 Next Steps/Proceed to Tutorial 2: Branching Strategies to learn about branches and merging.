@@ -1,0 +1,52 @@
+Quick Reference Card:
+
+```bash
+# Status & Information
+git status              # Show working directory status
+git log                 # Show commit history
+git diff                # Show changes not staged
+git show [commit]      # Show changes in commit
+
+# Making Changes
+git add [file]         # Stage file
+git commit -m "msg"    # Commit staged changes
+git rm [file]          # Remove file from tracking
+git mv [old] [new]     # Rename/move file
+
+# Undoing
+git reset [file]       # Unstage file
+git checkout -- [file] # Discard changes
+git revert [commit]    # Create undo commit
+```
+
+
+
+### **tutorials/02-branching-strategies/README.md**
+```markdown
+# Branching Strategies - Collaborate Effectively 🌿
+
+## 🎯 Learning Objectives
+- Understand Git branching model
+- Master branch operations
+- Learn merging strategies
+- Implement effective workflows
+- Resolve merge conflicts
+
+## 🌱 Understanding Branches
+
+### What are Branches?
+```bash
+# View all branches
+git branch              # Local branches
+git branch -a           # All branches (local + remote)
+git branch -r           # Remote branches
+
+# Create a new branch
+git branch feature-x
+git checkout feature-x
+# OR combine both
+git checkout -b feature-x
+
+# Switch between branches
+git checkout main
+git checkout feature-x
