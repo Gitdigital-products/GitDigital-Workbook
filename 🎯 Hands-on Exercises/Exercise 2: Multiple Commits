@@ -1,0 +1,11 @@
+# Make multiple commits
+echo "Line 1" > file.txt
+git add file.txt
+git commit -m "Add first line"
+
+echo "Line 2" >> file.txt
+git add file.txt
+git commit -m "Add second line"
+
+# View the timeline
+git log --oneline
