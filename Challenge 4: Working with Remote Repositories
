@@ -1,0 +1,50 @@
+Objective
+
+Practice GitHub collaboration basics.
+
+Requirements
+
+1. Create a local repository
+2. Create a GitHub repository
+3. Connect local to remote
+4. Push your code
+5. Clone a repository
+6. Make changes and push
+
+Instructions
+
+1. Go to GitHub and create a new repository (don't initialize with README)
+2. Follow the instructions below:
+
+Solution
+
+```bash
+# 1. Create local repo
+mkdir remote-practice
+cd remote-practice
+echo "# Remote Practice" > README.md
+git init
+git add README.md
+git commit -m "First commit"
+
+# 2. Add remote (replace with your URL)
+git remote add origin https://github.com/YOUR-USERNAME/remote-practice.git
+
+# 3. Push to remote
+git branch -M main
+git push -u origin main
+
+# 4. Clone in another location
+cd ..
+git clone https://github.com/YOUR-USERNAME/remote-practice.git remote-practice-clone
+cd remote-practice-clone
+
+# 5. Make changes and push
+echo "New feature" > feature.txt
+git add feature.txt
+git commit -m "Add new feature"
+git push origin main
+
+# 6. Pull changes in original
+cd ../remote-practice
+git pull origin main
