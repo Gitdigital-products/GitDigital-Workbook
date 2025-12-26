@@ -1,0 +1,517 @@
+
+Now, let me create the rest of the structure...
+
+## **2. Setting Up GitHub Actions Workflows**
+
+### **.github/workflows/ci.yml**
+```yaml
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-markdown:
+    runs-on: ubuntu-latest
+    name: Lint Markdown files
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Markdown Lint
+        uses: avto-dev/markdown-lint@v1
+        with:
+          config_file: '.github/linters/.markdown-lint.yml'
+          args: './**/*.md'
+
+  check-links:
+    runs-on: ubuntu-latest
+    name: Check Markdown links
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          use-verbose-mode: 'yes'
+          config-file: '.github/linters/mlc_config.json'
+
+  spell-check:
+    runs-on: ubuntu-latest
+    name: Spell Check Documentation
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check spelling
+        run: |
+          npm install -g markdown-spellcheck
+          mdspell '**/*.md' --ignore-numbers --ignore-acronyms --report --en-us
+          
+  validate-structure:
+    runs-on: ubuntu-latest
+    name: Validate Repository Structure
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check required files
+        run: |
+          required_files=("README.md" "CONTRIBUTING.md" "CODE_OF_CONDUCT.md" "LICENSE")
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing required file: $file"
+              exit 1
+            fi
+          done
+          echo "✅ All required files present"
+          
+  build-docs:
+    runs-on: ubuntu-latest
+    needs: [lint-markdown, check-links, spell-check, validate-structure]
+    name: Build Documentation
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Generate documentation index
+        run: |
+          echo "# GitDigital Workbook - Documentation Index" > docs/INDEX.md
+          echo "\nGenerated: $(date)\n" >> docs/INDEX.md
+          echo "## Table of Contents" >> docs/INDEX.md
+          find . -name "*.md" -type f | grep -v node_modules | sort >> docs/INDEX.md
+          
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: documentation
+          path: docs/
+          
+  deploy-pages:
+    runs-on: ubuntu-latest
+    needs: build-docs
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+        
+      - name: Build Jekyll site
+        run: |
+          echo "baseurl: /GitDigital-Workbook" > _config.yml
+          echo "title: GitDigital Workbook" >> _config.yml
+          
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: '.'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+``
+
+.github/workflows/pr-check.yml
+
+```yaml
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ main ]
+
+jobs:
+  pr-size-check:
+    runs-on: ubuntu-latest
+    name: Check PR Size
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check PR size
+        uses: gagoar/check-pr-size@v1
+        with:
+          max-files: 30
+          max-lines: 500
+        
+  commit-message-check:
+    runs-on: ubuntu-latest
+    name: Validate Commit Messages
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check commit messages
+        uses: gsactions/commit-message-checker@v1
+        with:
+          pattern: '^(feat|fix|docs|style|refactor|test|chore|perf)(\(.+\))?: .{1,72}'
+          error: 'Commit messages must follow Conventional Commits format'
+          excludeDescription: 'true'
+          excludeTitle: 'true'
+          checkAllCommitMessages: 'true'
+          
+  pr-description-check:
+    runs-on: ubuntu-latest
+    name: Check PR Description
+    steps:
+      - uses: mshick/add-pr-description@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          regex: '.*'  # Require any description
+          regexFlags: 'g'
+          passIfRegexMatches: true
+          errorMessage: 'Please provide a description for your pull request'
+          
+  tutorial-tests:
+    runs-on: ubuntu-latest
+    name: Run Tutorial Tests
+    strategy:
+      matrix:
+        tutorial: [01-git-basics, 02-branching-strategies]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Validate tutorial structure
+        run: |
+          TUTORIAL_PATH="tutorials/${{ matrix.tutorial }}"
+          if [ ! -f "$TUTORIAL_PATH/README.md" ]; then
+            echo "❌ Missing README.md in $TUTORIAL_PATH"
+            exit 1
+          fi
+          
+          # Check for required sections
+          REQUIRED_SECTIONS=("Learning Objectives" "Hands-on Exercises")
+          for section in "${REQUIRED_SECTIONS[@]}"; do
+            if ! grep -q "$section" "$TUTORIAL_PATH/README.md"; then
+              echo "❌ Missing '$section' section in $TUTORIAL_PATH/README.md"
+              exit 1
+            fi
+          done
+          
+          echo "✅ Tutorial ${{ matrix.tutorial }} structure is valid"
+``
+
+.github/workflows/auto-label.yml
+
+```yaml
+name: Auto Label Issues and PRs
+
+on:
+  issues:
+    types: [opened, edited]
+  pull_request:
+    types: [opened, edited]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: github/issue-labeler@v3
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          configuration-path: .github/labeler.yml
+          enable-versioned-regex: 0
+          
+  size-label:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: pascalgn/size-label-action@v0.5.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+  welcome:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    steps:
+      - name: Welcome new contributor
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `👋 Welcome @${context.payload.sender.login}! Thank you for opening this issue. A maintainer will review it shortly.
+
+Please make sure you've:
+1. Checked existing issues
+2. Followed the issue template
+3. Provided enough details to reproduce`
+            })
+``
+
+.github/linters/.markdown-lint.yml
+
+```yaml
+default: true
+
+MD001: false  # header-increment
+MD003:        # header-style
+  style: atx
+MD004:        # ul-style
+  style: dash
+MD007:        # ul-indent
+  indent: 2
+MD009: false  # no-trailing-spaces
+MD010: false  # no-hard-tabs
+MD013:        # line-length
+  line_length: 120
+  code_block_line_length: 120
+  tables: false
+MD022: false  # blanks-around-headers
+MD024: false  # no-duplicate-header
+MD026: false  # no-trailing-punctuation
+  punctuation: ".,;:!"
+MD029:        # ol-prefix
+  style: ordered
+MD030:        # list-marker-space
+  ul_single: 1
+  ol_single: 1
+  ul_multi: 1
+  ol_multi: 1
+MD033: false  # no-inline-html
+MD034: false  # no-bare-urls
+MD036: false  # no-emphasis-as-header
+MD040: false  # fenced-code-language
+MD041: false  # first-line-heading
+MD046:        # code-block-style
+  style: fenced
+``
+
+.github/labeler.yml
+
+```yaml
+"type: bug":
+  - title: "(?i)\\[?bug\\]?"
+  - body: "(?i)\\[?bug\\]?"
+
+"type: enhancement":
+  - title: "(?i)\\[?(enhancement|improvement|feature)\\]?"
+  - body: "(?i)\\[?(enhancement|improvement|feature)\\]?"
+
+"type: documentation":
+  - title: "(?i)\\[?(docs|documentation|readme|tutorial)\\]?"
+  - body: "(?i)\\[?(docs|documentation|readme|tutorial)\\]?"
+
+"type: question":
+  - title: "(?i)\\[?(question|help|support)\\]?"
+  - body: "(?i)\\[?(question|help|support)\\]?"
+
+"good first issue":
+  - body: "(?i)\\[?(good first issue|beginner friendly|starter)\\]?"
+
+"help wanted":
+  - body: "(?i)\\[?(help wanted|assistance needed)\\]?"
+
+"priority: high":
+  - title: "(?i)\\[?(urgent|priority|critical|high)\\]?"
+  - body: "(?i)\\[?(urgent|priority|critical|high)\\]?"
+``
+
+.github/ISSUE_TEMPLATE/bug-report.md
+
+```markdown
+---
+name: "🐛 Bug Report"
+about: Report a problem with the workbook
+title: "[BUG] "
+labels: ["type: bug", "needs-triage"]
+assignees: ''
+---
+
+## 🐛 Bug Description
+A clear and concise description of what the bug is.
+
+## 📋 Reproduction Steps
+1. Go to '...'
+2. Click on '....'
+3. Scroll down to '....'
+4. See error
+
+## ✅ Expected Behavior
+What you expected to happen.
+
+## ❌ Actual Behavior
+What actually happened.
+
+## 📸 Screenshots/Logs
+If applicable, add screenshots or error logs to help explain your problem.
+
+## 💻 Environment
+- **OS**: [e.g., Windows 10, macOS Monterey, Ubuntu 20.04]
+- **Git Version**: [e.g., 2.34.1]
+- **Browser**: [e.g., Chrome, Safari, Firefox]
+- **Workbook Version**: [e.g., v1.0.0]
+
+## 📝 Additional Context
+Add any other context about the problem here.
+
+## 🔍 Possible Solution
+If you have suggestions on how to fix the issue.
+``
+
+.github/ISSUE_TEMPLATE/feature-request.md
+
+```markdown
+---
+name: "✨ Feature Request"
+about: Suggest an idea for the workbook
+title: "[FEATURE] "
+labels: ["type: enhancement", "needs-triage"]
+assignees: ''
+---
+
+## 🚀 Problem Statement
+A clear and concise description of what problem you're facing. Ex. I'm always frustrated when [...]
+
+## 💡 Proposed Solution
+A clear and concise description of what you want to happen.
+
+## 🔄 Alternative Solutions
+A clear and concise description of any alternative solutions or features you've considered.
+
+## 📚 Use Cases
+Describe specific scenarios where this feature would be helpful.
+
+## 🎯 Implementation Ideas
+If you have ideas about how to implement this feature:
+- Suggested tutorial structure
+- Code examples to include
+- Exercises to add
+- Documentation updates
+
+## 📝 Additional Context
+Add any other context or screenshots about the feature request here.
+
+## 🤝 Would you like to contribute?
+- [ ] Yes, I'd like to help implement this feature
+- [ ] No, but I can provide more details
+- [ ] Maybe, with some guidance
+``
+
+.github/ISSUE_TEMPLATE/documentation.md
+
+```markdown
+---
+name: "📚 Documentation Issue"
+about: Report issues with documentation or suggest improvements
+title: "[DOCS] "
+labels: ["type: documentation", "needs-triage"]
+assignees: ''
+---
+
+## 📖 Documentation Location
+- [ ] README.md
+- [ ] Tutorial files
+- [ ] Code examples
+- [ ] Comments in code
+- [ ] Other: _____
+
+## 🔍 Issue Type
+- [ ] Typo or grammar error
+- [ ] Missing information
+- [ ] Outdated information
+- [ ] Confusing explanation
+- [ ] Broken links
+- [ ] Other: _____
+
+## 📝 Description
+Describe the issue with the documentation.
+
+## 📍 Specific Location
+File: `path/to/file.md`
+Line number(s): _____
+
+## ✅ Suggested Improvement
+How should this be fixed or improved?
+
+## 📸 Screenshot
+If applicable, add a screenshot highlighting the issue.
+
+## 🌐 References
+Add links to relevant Git documentation or resources.
+``
+
+3. Creating Interactive Exercises
+
+challenges/beginner/README.md
+
+```markdown
+# Beginner Challenges 🎮
+
+Complete these exercises to practice basic Git skills. Each challenge has:
+- **Objective**: What you'll learn
+- **Requirements**: What you need to do
+- **Hints**: Tips if you get stuck
+- **Solution**: Steps to complete (try without looking first!)
+
+---
+
+## Challenge 1: First Steps with Git
+
+### Objective
+Create your first repository and make initial commits.
+
+### Requirements
+1. Initialize a new Git repository
+2. Create a `README.md` file with project description
+3. Create a `.gitignore` file ignoring log files
+4. Make at least 3 commits with meaningful messages
+5. View your commit history
+
+### Hints
+```bash
+# Start with these commands:
+mkdir my-first-repo
+cd my-first-repo
+git init
+``
+
+Solution
+
+```bash
+# Step 1: Create and initialize repository
+mkdir my-first-repo && cd my-first-repo
+git init
+
+# Step 2: Create README.md
+echo "# My First Git Repository" > README.md
+echo "This is my first project using Git!" >> README.md
+git add README.md
+git commit -m "docs: Add project README"
+
+# Step 3: Create .gitignore
+echo "*.log" > .gitignore
+echo "tmp/" >> .gitignore
+git add .gitignore
+git commit -m "chore: Add .gitignore file"
+
+# Step 4: Add another file
+echo "Project started: $(date)" > project-info.txt
+git add project-info.txt
+git commit -m "feat: Add project info with start date"
+
+# Step 5: View history
+git log --oneline
