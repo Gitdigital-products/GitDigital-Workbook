@@ -1,0 +1,9 @@
+### **Enable GitHub Pages** (for documentation):
+1. Go to repository Settings → Pages
+2. Source: `main` branch, `/docs` folder
+3. Enable GitHub Actions for deployment
+
+### **Create Issue Templates** (`.github/ISSUE_TEMPLATE/`):
+- `bug-report.md`
+- `feature-request.md`
+- `documentation.md`
