@@ -1,0 +1,54 @@
+
+Objective
+
+Create and work with branches.
+
+Requirements
+
+1. Create a feature branch
+2. Make changes on the branch
+3. Merge back to main
+4. Handle a simple merge conflict
+
+Solution
+
+```bash
+# Setup
+mkdir branch-practice && cd branch-practice
+git init
+echo "Main content" > file.txt
+git add file.txt
+git commit -m "Initial commit"
+
+# 1. Create and switch to feature branch
+git checkout -b feature-branch
+
+# 2. Make changes on feature
+echo "Feature addition" >> file.txt
+git add file.txt
+git commit -m "Add feature to file"
+
+# 3. Switch back to main and make conflicting change
+git checkout main
+echo "Main update" >> file.txt
+git add file.txt
+git commit -m "Update on main"
+
+# 4. Merge feature (will conflict)
+git merge feature-branch
+
+# 5. Resolve conflict (edit file.txt to keep both lines)
+# <<<<<<< HEAD
+# Main content
+# Main update
+# =======
+# Main content
+# Feature addition
+# >>>>>>> feature-branch
+
+# After editing to include both:
+git add file.txt
+git commit -m "Merge feature branch"
+
+# Clean up
+git branch -d feature-branch
