@@ -1,0 +1,35 @@
+Copy and complete this checklist:
+
+```markdown
+# My Progress
+
+## Challenge 1: First Steps
+- [ ] Repository initialized
+- [ ] README.md created
+- [ ] .gitignore created
+- [ ] 3+ commits made
+- [ ] History viewed
+
+## Challenge 2: Git Status
+- [ ] Files in different states created
+- [ ] `git status` understood
+- [ ] `git diff` used
+
+## Challenge 3: Undoing Changes
+- [ ] Commit amended
+- [ ] File restored
+- [ ] File unstaged
+- [ ] Reset performed
+
+## Challenge 4: Remote Repositories
+- [ ] GitHub repo created
+- [ ] Local connected to remote
+- [ ] Code pushed
+- [ ] Repository cloned
+- [ ] Changes pushed from clone
+
+## Challenge 5: Basic Branching
+- [ ] Feature branch created
+- [ ] Changes made on branch
+- [ ] Merge conflict resolved
+- [ ] Branch deleted
