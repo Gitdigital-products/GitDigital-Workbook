@@ -1,0 +1,13 @@
+# Create a new file
+echo "# My Project" > README.md
+
+# Stage the file
+git add README.md
+# or stage all changes
+git add .
+
+# Commit with message
+git commit -m "Initial commit: Add README"
+
+# View commit history
+git log --oneline
