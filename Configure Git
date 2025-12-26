@@ -1,0 +1,14 @@
+# Set your identity
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+
+# Set default editor
+git config --global core.editor "code --wait"  # VS Code
+# git config --global core.editor "vim"        # Vim
+# git config --global core.editor "nano"       # Nano
+
+# Enable color output
+git config --global color.ui auto
+
+# Check your configuration
+git config --list
