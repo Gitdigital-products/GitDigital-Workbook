@@ -8,7 +8,7 @@ After completing these challenges:
 
 Remember: Practice makes perfect! Repeat challenges until you're comfortable.
 
-``
+```
 
 ### **challenges/beginner/solutions/verify.sh**
 ```bash
@@ -97,7 +97,7 @@ check_challenge_2
 echo ""
 echo "========================================"
 echo "Verification complete! Keep practicing! 🎉"
-``
+```
 
 challenges/interactive/git-simulator.js
 
@@ -381,7 +381,7 @@ if (require.main === module) {
 }
 
 module.exports = GitSimulator;
-``
+```
 
 challenges/interactive/package.json
 
@@ -407,7 +407,7 @@ challenges/interactive/package.json
     "jest": "^28.1.3"
   }
 }
-``
+```
 
 4. Adding a GitHub Pages Site
 
@@ -467,7 +467,7 @@ defaults:
       path: ""
     values:
       layout: "default"
-``
+```
 
 index.md (Main page)
 
@@ -547,7 +547,7 @@ graph LR
     D --> N[Workflow Design];
     D --> O[Mentoring];
     D --> P[Contributing];
-``
+```
 
 📈 Track Your Progress
 
@@ -559,7 +559,7 @@ Advanced Git ⏳ Not Started 0/6
 
 🏗 Project Structure
 
-``
+```
 GitDigital-Workbook/
 ├── 📁 tutorials/          # Step-by-step guides
 ├── 📁 challenges/         # Hands-on exercises
@@ -567,7 +567,7 @@ GitDigital-Workbook/
 ├── 📁 templates/         # Ready-to-use configs
 ├── 📁 resources/         # Additional materials
 └── 📁 solutions/         # Exercise answers
-``
+```
 
 🎯 Who Is This For?
 
@@ -622,7 +622,7 @@ Ready to begin? Start with Tutorial 1: Git Basics
     <p>Open Source</p>
   </div>
 </div>
-``
+```
 
 assets/css/custom.css
 
@@ -898,7 +898,7 @@ code {
     background: #161b22;
   }
 }
-``
+```
 
 assets/js/interactive.js
 
@@ -1391,7 +1391,7 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-``
+```
 
 404.md (Custom 404 page)
 
@@ -1426,7 +1426,7 @@ git show :/"search term"
 # To recover lost work:
 git reflog
 git checkout lost-commit-hash
-``
+```
 
 Need Help?
 
