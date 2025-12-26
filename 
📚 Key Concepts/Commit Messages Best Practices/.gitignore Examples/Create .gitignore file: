@@ -1,0 +1,18 @@
+# Compiled files
+*.class
+*.exe
+*.dll
+
+# Dependencies
+node_modules/
+vendor/
+*.jar
+
+# Environment variables
+.env
+.secrets
+
+# IDE files
+.vscode/
+.idea/
+*.swp
