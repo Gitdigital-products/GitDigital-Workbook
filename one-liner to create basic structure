@@ -1,0 +1,4 @@
+# Create main directories
+mkdir -p {docs,tutorials/{01-git-basics,02-branching},examples,templates,resources} && \
+mkdir -p .github/{ISSUE_TEMPLATE,workflows} && \
+touch README.md .gitignore CONTRIBUTING.md LICENSE
