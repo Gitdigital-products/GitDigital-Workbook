@@ -1,0 +1,11 @@
+
+· git status - Check repository status
+· git add - Stage changes
+· git commit - Save changes
+· git log - View history
+
+Exercises
+
+1. Create a new repository
+2. Make your first commit
+3. View commit history
