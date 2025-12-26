@@ -1,0 +1,14 @@
+# Add remote repository
+git remote add origin https://github.com/Gitdigital-products/GitDigital-Workbook.git
+
+# Verify remote
+git remote -v
+
+# Push to remote
+git push -u origin main
+
+# Pull updates
+git pull origin main
+
+# Clone existing repository
+git clone https://github.com/Gitdigital-products/GitDigital-Workbook.git
