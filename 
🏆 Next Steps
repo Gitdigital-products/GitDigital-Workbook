@@ -1,0 +1,1439 @@
+
+After completing these challenges:
+
+1. Move to Intermediate Challenges
+2. Try real projects on GitHub
+3. Contribute to open source
+4. Teach someone else what you learned!
+
+Remember: Practice makes perfect! Repeat challenges until you're comfortable.
+
+``
+
+### **challenges/beginner/solutions/verify.sh**
+```bash
+#!/bin/bash
+
+# Challenge Verification Script
+# Run this to check if you completed challenges correctly
+
+echo "🔍 GitDigital Workbook Challenge Verifier"
+echo "========================================"
+
+check_challenge_1() {
+    echo "Checking Challenge 1: First Steps..."
+    
+    if [ ! -d "my-first-repo" ]; then
+        echo "❌ my-first-repo directory not found"
+        return 1
+    fi
+    
+    cd my-first-repo || return 1
+    
+    if [ ! -d ".git" ]; then
+        echo "❌ Not a Git repository"
+        cd ..
+        return 1
+    fi
+    
+    if [ ! -f "README.md" ]; then
+        echo "❌ README.md not found"
+        cd ..
+        return 1
+    fi
+    
+    if [ ! -f ".gitignore" ]; then
+        echo "❌ .gitignore not found"
+        cd ..
+        return 1
+    fi
+    
+    commit_count=$(git log --oneline | wc -l)
+    if [ "$commit_count" -lt 3 ]; then
+        echo "❌ Need at least 3 commits (found: $commit_count)"
+        cd ..
+        return 1
+    fi
+    
+    echo "✅ Challenge 1 completed successfully!"
+    cd ..
+    return 0
+}
+
+check_challenge_2() {
+    echo "Checking Challenge 2: Git Status..."
+    
+    if [ ! -d "status-exercise" ]; then
+        echo "❌ status-exercise directory not found"
+        return 1
+    fi
+    
+    cd status-exercise || return 1
+    
+    if ! git status | grep -q "nothing to commit"; then
+        echo "❌ Repository should be clean"
+        cd ..
+        return 1
+    fi
+    
+    file_count=$(ls -1 *.txt 2>/dev/null | wc -l)
+    if [ "$file_count" -lt 3 ]; then
+        echo "❌ Should have at least 3 .txt files"
+        cd ..
+        return 1
+    fi
+    
+    echo "✅ Challenge 2 completed successfully!"
+    cd ..
+    return 0
+}
+
+# Run checks
+echo ""
+check_challenge_1
+echo ""
+check_challenge_2
+
+echo ""
+echo "========================================"
+echo "Verification complete! Keep practicing! 🎉"
+``
+
+challenges/interactive/git-simulator.js
+
+```javascript
+// Git Command Simulator - Interactive Learning Tool
+// Run with: node git-simulator.js
+
+const readline = require('readline');
+const fs = require('fs');
+const path = require('path');
+
+class GitSimulator {
+    constructor() {
+        this.repository = {
+            workingDir: {},
+            stagingArea: {},
+            commits: [],
+            branches: {
+                main: []
+            },
+            currentBranch: 'main',
+            HEAD: null
+        };
+        
+        this.rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+        
+        this.commands = {
+            'init': this.init.bind(this),
+            'status': this.status.bind(this),
+            'add': this.add.bind(this),
+            'commit': this.commit.bind(this),
+            'log': this.log.bind(this),
+            'branch': this.branch.bind(this),
+            'checkout': this.checkout.bind(this),
+            'merge': this.merge.bind(this),
+            'help': this.help.bind(this),
+            'quit': () => process.exit(0)
+        };
+    }
+    
+    init() {
+        if (this.repository.HEAD !== null) {
+            console.log('Reinitialized existing Git repository');
+        } else {
+            this.repository.HEAD = 'ref: refs/heads/main';
+            console.log('Initialized empty Git repository');
+        }
+    }
+    
+    status() {
+        console.log('\nOn branch', this.repository.currentBranch);
+        
+        const changes = Object.keys(this.repository.workingDir)
+            .filter(file => !this.repository.stagingArea[file]);
+        
+        const staged = Object.keys(this.repository.stagingArea);
+        
+        if (staged.length > 0) {
+            console.log('\nChanges to be committed:');
+            staged.forEach(file => {
+                console.log(`  new file: ${file}`);
+            });
+        }
+        
+        if (changes.length > 0) {
+            console.log('\nUntracked files:');
+            changes.forEach(file => {
+                console.log(`  ${file}`);
+            });
+        }
+        
+        if (staged.length === 0 && changes.length === 0) {
+            console.log('nothing to commit, working tree clean');
+        }
+    }
+    
+    add(args) {
+        if (args.length === 0) {
+            console.log('Usage: add <file> or add .');
+            return;
+        }
+        
+        const files = args[0] === '.' 
+            ? Object.keys(this.repository.workingDir)
+            : args.filter(arg => this.repository.workingDir[arg]);
+        
+        files.forEach(file => {
+            this.repository.stagingArea[file] = this.repository.workingDir[file];
+            delete this.repository.workingDir[file];
+        });
+        
+        console.log(`Added ${files.length} file(s) to staging`);
+    }
+    
+    commit(args) {
+        if (args.length < 2 || args[0] !== '-m') {
+            console.log('Usage: commit -m "message"');
+            return;
+        }
+        
+        const message = args.slice(1).join(' ');
+        const stagedFiles = { ...this.repository.stagingArea };
+        
+        if (Object.keys(stagedFiles).length === 0) {
+            console.log('No changes added to commit');
+            return;
+        }
+        
+        const commit = {
+            hash: Math.random().toString(36).substr(2, 8),
+            message: message,
+            files: stagedFiles,
+            branch: this.repository.currentBranch,
+            timestamp: new Date().toISOString()
+        };
+        
+        this.repository.commits.push(commit);
+        this.repository.branches[this.repository.currentBranch].push(commit.hash);
+        this.repository.stagingArea = {};
+        
+        console.log(`[${commit.hash.substring(0, 7)}] ${message}`);
+        console.log(` ${Object.keys(stagedFiles).length} file(s) changed`);
+    }
+    
+    log() {
+        console.log('\nCommit History:');
+        console.log('=' .repeat(50));
+        
+        this.repository.commits.forEach((commit, index) => {
+            console.log(`\nCommit ${commit.hash.substring(0, 7)}`);
+            console.log(`Date: ${commit.timestamp}`);
+            console.log(`Branch: ${commit.branch}`);
+            console.log(`Message: ${commit.message}`);
+            console.log(`Files: ${Object.keys(commit.files).join(', ')}`);
+        });
+    }
+    
+    branch(args) {
+        if (args.length === 0) {
+            // List branches
+            console.log('\nBranches:');
+            Object.keys(this.repository.branches).forEach(branch => {
+                const marker = branch === this.repository.currentBranch ? '*' : ' ';
+                console.log(`${marker} ${branch}`);
+            });
+        } else if (args[0] === '-d') {
+            // Delete branch
+            const branchName = args[1];
+            if (branchName === this.repository.currentBranch) {
+                console.log(`Cannot delete current branch '${branchName}'`);
+            } else if (this.repository.branches[branchName]) {
+                delete this.repository.branches[branchName];
+                console.log(`Deleted branch ${branchName}`);
+            } else {
+                console.log(`Branch '${branchName}' not found`);
+            }
+        } else {
+            // Create new branch
+            const branchName = args[0];
+            if (this.repository.branches[branchName]) {
+                console.log(`Branch '${branchName}' already exists`);
+            } else {
+                this.repository.branches[branchName] = [];
+                console.log(`Created branch ${branchName}`);
+            }
+        }
+    }
+    
+    checkout(args) {
+        if (args.length === 0) {
+            console.log('Usage: checkout <branch>');
+            return;
+        }
+        
+        const target = args[0];
+        
+        if (target === '-b') {
+            const newBranch = args[1];
+            this.repository.branches[newBranch] = [];
+            this.repository.currentBranch = newBranch;
+            console.log(`Switched to a new branch '${newBranch}'`);
+        } else if (this.repository.branches[target]) {
+            this.repository.currentBranch = target;
+            console.log(`Switched to branch '${target}'`);
+        } else {
+            console.log(`Branch '${target}' not found`);
+        }
+    }
+    
+    merge(args) {
+        if (args.length === 0) {
+            console.log('Usage: merge <branch>');
+            return;
+        }
+        
+        const sourceBranch = args[0];
+        
+        if (!this.repository.branches[sourceBranch]) {
+            console.log(`Branch '${sourceBranch}' not found`);
+            return;
+        }
+        
+        if (sourceBranch === this.repository.currentBranch) {
+            console.log('Cannot merge a branch with itself');
+            return;
+        }
+        
+        console.log(`Merging '${sourceBranch}' into '${this.repository.currentBranch}'`);
+        console.log('Auto-merging completed');
+        console.log('Merge made by recursive strategy');
+    }
+    
+    help() {
+        console.log('\nAvailable commands:');
+        console.log('  init              - Initialize a new repository');
+        console.log('  status            - Show working directory status');
+        console.log('  add <file>        - Add file to staging area');
+        console.log('  commit -m "msg"   - Commit staged changes');
+        console.log('  log               - Show commit history');
+        console.log('  branch            - List branches');
+        console.log('  branch <name>     - Create new branch');
+        console.log('  branch -d <name>  - Delete branch');
+        console.log('  checkout <branch> - Switch branches');
+        console.log('  checkout -b <new> - Create and switch to new branch');
+        console.log('  merge <branch>    - Merge branches');
+        console.log('  help              - Show this help');
+        console.log('  quit              - Exit simulator');
+    }
+    
+    createFile(args) {
+        if (args.length === 0) {
+            console.log('Usage: create <filename> <content>');
+            return;
+        }
+        
+        const filename = args[0];
+        const content = args.slice(1).join(' ') || 'Default content';
+        
+        this.repository.workingDir[filename] = content;
+        console.log(`Created file: ${filename}`);
+    }
+    
+    start() {
+        console.log('🚀 Git Command Simulator');
+        console.log('=======================');
+        console.log('Practice Git commands in a safe environment!');
+        console.log('Type "help" for available commands');
+        console.log('Type "quit" to exit\n');
+        
+        // Add file creation command
+        this.commands['create'] = this.createFile.bind(this);
+        
+        this.prompt();
+    }
+    
+    prompt() {
+        this.rl.question('\ngit-sim> ', (input) => {
+            const parts = input.trim().split(' ');
+            const command = parts[0];
+            const args = parts.slice(1);
+            
+            if (this.commands[command]) {
+                this.commands[command](args);
+            } else {
+                console.log(`Unknown command: ${command}`);
+                console.log('Type "help" for available commands');
+            }
+            
+            this.prompt();
+        });
+    }
+}
+
+// Start simulator if run directly
+if (require.main === module) {
+    const simulator = new GitSimulator();
+    simulator.start();
+}
+
+module.exports = GitSimulator;
+``
+
+challenges/interactive/package.json
+
+```json
+{
+  "name": "gitdigital-workbook-simulator",
+  "version": "1.0.0",
+  "description": "Interactive Git command simulator for learning",
+  "main": "git-simulator.js",
+  "scripts": {
+    "start": "node git-simulator.js",
+    "test": "node test-simulator.js",
+    "challenge": "node interactive-challenge.js"
+  },
+  "keywords": ["git", "learning", "simulator", "education"],
+  "author": "GitDigital Products",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.4"
+  },
+  "devDependencies": {
+    "jest": "^28.1.3"
+  }
+}
+``
+
+4. Adding a GitHub Pages Site
+
+_config.yml (Jekyll configuration)
+
+```yaml
+# GitDigital Workbook - Jekyll Configuration
+title: "GitDigital Workbook"
+description: "A comprehensive guide to mastering Git and GitHub"
+baseurl: "/GitDigital-Workbook"
+url: "https://gitdigital-products.github.io"
+repository: "Gitdigital-products/GitDigital-Workbook"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Navigation
+header_pages:
+  - index.md
+  - tutorials.md
+  - challenges.md
+  - resources.md
+
+# Customization
+logo: "/assets/images/logo.png"
+github_username: Gitdigital-products
+twitter_username: gitdigital
+
+# Collections
+collections:
+  tutorials:
+    output: true
+    permalink: /tutorials/:path/
+  challenges:
+    output: true
+    permalink: /challenges/:path/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "tutorials"
+    values:
+      layout: "tutorial"
+      toc: true
+  - scope:
+      path: ""
+      type: "challenges"
+    values:
+      layout: "challenge"
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+``
+
+index.md (Main page)
+
+```markdown
+---
+layout: home
+title: "GitDigital Workbook"
+tagline: "Master Git & GitHub through Interactive Learning"
+---
+
+# Welcome to GitDigital Workbook 🎯
+
+![Git Banner](/assets/images/git-banner.png)
+
+## 📚 Your Journey to Git Mastery Starts Here
+
+The GitDigital Workbook is a comprehensive, hands-on guide designed to take you from Git beginner to collaboration expert. Whether you're just starting or looking to refine your skills, this workbook provides practical exercises, real-world scenarios, and interactive challenges.
+
+## 🚀 Quick Start
+
+<div class="quick-links">
+  <a href="/GitDigital-Workbook/tutorials/01-git-basics/" class="btn btn-primary">
+    <i class="fas fa-play"></i> Start Learning
+  </a>
+  <a href="/GitDigital-Workbook/challenges/beginner/" class="btn btn-secondary">
+    <i class="fas fa-gamepad"></i> Try Challenges
+  </a>
+  <a href="https://github.com/Gitdigital-products/GitDigital-Workbook" class="btn btn-outline">
+    <i class="fab fa-github"></i> View on GitHub
+  </a>
+</div>
+
+## 📖 What You'll Learn
+
+<div class="features">
+  <div class="feature">
+    <h3><i class="fas fa-code-branch"></i> Git Fundamentals</h3>
+    <p>Master the core concepts of version control, commits, branching, and merging.</p>
+  </div>
+  
+  <div class="feature">
+    <h3><i class="fas fa-users"></i> Team Collaboration</h3>
+    <p>Learn GitHub workflows, pull requests, code reviews, and team coordination.</p>
+  </div>
+  
+  <div class="feature">
+    <h3><i class="fas fa-tools"></i> Advanced Techniques</h3>
+    <p>Explore rebasing, cherry-picking, hooks, and other advanced Git features.</p>
+  </div>
+  
+  <div class="feature">
+    <h3><i class="fas fa-project-diagram"></i> Real Projects</h3>
+    <p>Apply your skills to actual scenarios with guided projects and exercises.</p>
+  </div>
+</div>
+
+## 🎮 Interactive Learning Path
+
+```mermaid
+graph LR
+    A[Beginner] --> B[Intermediate];
+    B --> C[Advanced];
+    C --> D[Expert];
+    
+    A --> E[Git Basics];
+    A --> F[First Commits];
+    A --> G[Remote Repos];
+    
+    B --> H[Branching];
+    B --> I[Merging];
+    B --> J[Collaboration];
+    
+    C --> K[Rebasing];
+    C --> L[Hooks];
+    C --> M[Advanced Tools];
+    
+    D --> N[Workflow Design];
+    D --> O[Mentoring];
+    D --> P[Contributing];
+``
+
+📈 Track Your Progress
+
+Module Status Completed Exercises
+Git Basics 🔄 In Progress 3/10
+Branching ⏳ Not Started 0/8
+Collaboration ⏳ Not Started 0/12
+Advanced Git ⏳ Not Started 0/6
+
+🏗 Project Structure
+
+``
+GitDigital-Workbook/
+├── 📁 tutorials/          # Step-by-step guides
+├── 📁 challenges/         # Hands-on exercises
+├── 📁 examples/          # Real-world scenarios
+├── 📁 templates/         # Ready-to-use configs
+├── 📁 resources/         # Additional materials
+└── 📁 solutions/         # Exercise answers
+``
+
+🎯 Who Is This For?
+
+· Beginners: Starting your Git journey
+· Developers: Looking to improve collaboration skills
+· Team Leads: Establishing Git workflows
+· Open Source Contributors: Learning GitHub collaboration
+· Students: Building portfolio projects
+
+🆕 Latest Updates
+
+{% for post in site.posts limit:3 %}
+
+· {{ post.date | date: "%b %d, %Y" }}: [{{ post.title }}]({{ post.url }})
+  {%endfor %}
+
+View all updates
+
+🤝 Contribute to This Workbook
+
+This is a living document! We welcome contributions:
+
+1. Report Issues: Found a bug? Open an issue
+2. Suggest Improvements: Have ideas? Start a discussion
+3. Contribute Content: Want to add a tutorial? Submit a PR
+
+📞 Need Help?
+
+· Join our Discussions
+· Check FAQ
+· Email: contact@gitdigital.products
+
+---
+
+Ready to begin? Start with Tutorial 1: Git Basics
+
+<div class="stats">
+  <div class="stat">
+    <h4>500+</h4>
+    <p>Lines of Tutorial Content</p>
+  </div>
+  <div class="stat">
+    <h4>50+</h4>
+    <p>Interactive Exercises</p>
+  </div>
+  <div class="stat">
+    <h4>20+</h4>
+    <p>Real-World Examples</p>
+  </div>
+  <div class="stat">
+    <h4>100%</h4>
+    <p>Open Source</p>
+  </div>
+</div>
+``
+
+assets/css/custom.css
+
+```css
+/* GitDigital Workbook Custom Styles */
+
+:root {
+  --primary-color: #2ea44f;
+  --secondary-color: #0366d6;
+  --accent-color: #6f42c1;
+  --light-bg: #f6f8fa;
+  --dark-bg: #24292e;
+  --text-color: #24292e;
+  --text-light: #586069;
+}
+
+/* Global Styles */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+/* Navigation */
+.site-nav {
+  background: var(--dark-bg);
+  padding: 1rem 0;
+}
+
+.site-nav a {
+  color: white;
+  text-decoration: none;
+  margin: 0 1rem;
+  font-weight: 600;
+}
+
+.site-nav a:hover {
+  color: var(--primary-color);
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #22863a;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: var(--secondary-color);
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #005cc5;
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  background: transparent;
+}
+
+.btn-outline:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* Features Grid */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin: 3rem 0;
+}
+
+.feature {
+  padding: 1.5rem;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  transition: transform 0.2s;
+}
+
+.feature:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.feature h3 {
+  color: var(--secondary-color);
+  margin-top: 0;
+}
+
+.feature i {
+  color: var(--primary-color);
+  margin-right: 0.5rem;
+}
+
+/* Quick Links */
+.quick-links {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem 0;
+  flex-wrap: wrap;
+}
+
+/* Stats */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 2rem;
+  margin: 3rem 0;
+  text-align: center;
+}
+
+.stat h4 {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.stat p {
+  color: var(--text-light);
+  margin: 0.5rem 0 0;
+}
+
+/* Tutorial Navigation */
+.tutorial-nav {
+  background: var(--light-bg);
+  padding: 1rem;
+  border-radius: 6px;
+  margin: 2rem 0;
+}
+
+.tutorial-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tutorial-nav li {
+  margin: 0.5rem 0;
+}
+
+.tutorial-nav a {
+  color: var(--secondary-color);
+  text-decoration: none;
+}
+
+.tutorial-nav a:hover {
+  text-decoration: underline;
+}
+
+/* Code Blocks */
+pre, code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  background: var(--light-bg);
+  border-radius: 6px;
+}
+
+pre {
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+code {
+  padding: 0.2rem 0.4rem;
+  font-size: 0.9em;
+}
+
+/* Challenge Cards */
+.challenge-card {
+  border: 2px solid #e1e4e8;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  background: white;
+}
+
+.challenge-card h3 {
+  margin-top: 0;
+  color: var(--accent-color);
+}
+
+.challenge-difficulty {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.difficulty-beginner {
+  background: #d1f7c4;
+  color: #0e4429;
+}
+
+.difficulty-intermediate {
+  background: #fff2c5;
+  color: #543b0e;
+}
+
+.difficulty-advanced {
+  background: #ffd1c5;
+  color: #7d0e0e;
+}
+
+/* Progress Bars */
+.progress-container {
+  background: #e1e4e8;
+  border-radius: 6px;
+  overflow: hidden;
+  height: 8px;
+  margin: 1rem 0;
+}
+
+.progress-bar {
+  background: var(--primary-color);
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .features {
+    grid-template-columns: 1fr;
+  }
+  
+  .quick-links {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --light-bg: #2d333b;
+    --text-color: #f0f6fc;
+    --text-light: #8b949e;
+  }
+  
+  body {
+    background: #0d1117;
+    color: var(--text-color);
+  }
+  
+  .feature {
+    border-color: #30363d;
+    background: #161b22;
+  }
+  
+  pre, code {
+    background: #161b22;
+  }
+}
+``
+
+assets/js/interactive.js
+
+```javascript
+// Interactive elements for GitDigital Workbook
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Progress tracking
+    initProgressTracking();
+    
+    // Interactive code examples
+    initInteractiveCode();
+    
+    // Challenge toggles
+    initChallengeToggles();
+    
+    // Command simulator launcher
+    initSimulatorLauncher();
+});
+
+function initProgressTracking() {
+    const progressItems = document.querySelectorAll('.progress-item');
+    
+    progressItems.forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const progressBar = item.querySelector('.progress-bar');
+        
+        if (checkbox && progressBar) {
+            // Load saved state
+            const savedState = localStorage.getItem(`progress-${checkbox.id}`);
+            if (savedState === 'completed') {
+                checkbox.checked = true;
+                progressBar.style.width = '100%';
+            }
+            
+            // Save state on change
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    localStorage.setItem(`progress-${this.id}`, 'completed');
+                    progressBar.style.width = '100%';
+                    showCompletionMessage();
+                } else {
+                    localStorage.removeItem(`progress-${this.id}`);
+                    progressBar.style.width = '0%';
+                }
+                updateOverallProgress();
+            });
+        }
+    });
+}
+
+function updateOverallProgress() {
+    const checkboxes = document.querySelectorAll('.progress-item input[type="checkbox"]');
+    const completed = Array.from(checkboxes).filter(cb => cb.checked).length;
+    const total = checkboxes.length;
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+    const overallProgress = document.getElementById('overall-progress');
+    if (overallProgress) {
+        overallProgress.style.width = `${percentage}%`;
+        overallProgress.textContent = `${percentage}%`;
+    }
+    
+    const progressText = document.getElementById('progress-text');
+    if (progressText) {
+        progressText.textContent = `${completed}/${total} exercises completed`;
+    }
+}
+
+function showCompletionMessage() {
+    const messages = [
+        "Great job! 🎉",
+        "Another one down! 👍",
+        "Keep going! 🚀",
+        "You're learning fast! ⚡",
+        "Excellent work! 🌟"
+    ];
+    
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    
+    // Create notification
+    const notification = document.createElement('div');
+    notification.className = 'completion-notification';
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-icon">✅</span>
+            <span class="notification-text">${randomMessage}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Style notification
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #2ea44f;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+    `;
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
+
+function initInteractiveCode() {
+    // Make code blocks copyable
+    document.querySelectorAll('pre code').forEach(block => {
+        const button = document.createElement('button');
+        button.className = 'copy-button';
+        button.innerHTML = '📋';
+        button.title = 'Copy to clipboard';
+        
+        button.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(block.textContent);
+                button.innerHTML = '✅';
+                button.style.background = '#2ea44f';
+                
+                setTimeout(() => {
+                    button.innerHTML = '📋';
+                    button.style.background = '';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                button.innerHTML = '❌';
+            }
+        });
+        
+        const pre = block.parentElement;
+        if (pre) {
+            pre.style.position = 'relative';
+            pre.appendChild(button);
+            
+            // Style the button
+            button.style.cssText = `
+                position: absolute;
+                top: 0.5rem;
+                right: 0.5rem;
+                background: #24292e;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 0.25rem 0.5rem;
+                cursor: pointer;
+                font-size: 0.875rem;
+                opacity: 0.7;
+                transition: opacity 0.2s;
+            `;
+            
+            pre.addEventListener('mouseenter', () => {
+                button.style.opacity = '1';
+            });
+            
+            pre.addEventListener('mouseleave', () => {
+                button.style.opacity = '0.7';
+            });
+        }
+    });
+    
+    // Make command examples interactive
+    document.querySelectorAll('.interactive-command').forEach(command => {
+        command.addEventListener('click', function() {
+            const cmd = this.textContent.trim();
+            navigator.clipboard.writeText(cmd);
+            
+            const originalText = this.textContent;
+            this.textContent = 'Copied!';
+            this.style.background = '#2ea44f';
+            
+            setTimeout(() => {
+                this.textContent = originalText;
+                this.style.background = '';
+            }, 1500);
+        });
+    });
+}
+
+function initChallengeToggles() {
+    document.querySelectorAll('.challenge-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+            const isHidden = content.style.display === 'none';
+            
+            content.style.display = isHidden ? 'block' : 'none';
+            this.querySelector('.toggle-icon').textContent = isHidden ? '▼' : '▶';
+        });
+    });
+}
+
+function initSimulatorLauncher() {
+    const launchButtons = document.querySelectorAll('.launch-simulator');
+    
+    launchButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Create modal for simulator
+            const modal = document.createElement('div');
+            modal.className = 'simulator-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Git Command Simulator</h2>
+                        <button class="close-modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="simulator-terminal">
+                            <div class="terminal-output" id="terminal-output">
+                                <div>🚀 Git Command Simulator</div>
+                                <div>Type 'help' for available commands</div>
+                                <div>Type 'quit' to exit</div>
+                            </div>
+                            <div class="terminal-input">
+                                <span class="prompt">git-sim&gt;</span>
+                                <input type="text" id="simulator-input" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="simulator-help">
+                            <h4>Available Commands:</h4>
+                            <ul>
+                                <li><code>init</code> - Initialize repository</li>
+                                <li><code>status</code> - Check status</li>
+                                <li><code>add &lt;file&gt;</code> - Stage file</li>
+                                <li><code>commit -m "msg"</code> - Make commit</li>
+                                <li><code>log</code> - View history</li>
+                                <li><code>help</code> - Show all commands</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Add styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .simulator-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0,0,0,0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 2000;
+                }
+                
+                .modal-content {
+                    background: white;
+                    border-radius: 8px;
+                    width: 90%;
+                    max-width: 800px;
+                    max-height: 90vh;
+                    overflow: hidden;
+                }
+                
+                .modal-header {
+                    background: #24292e;
+                    color: white;
+                    padding: 1rem;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                
+                .close-modal {
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 1.5rem;
+                    cursor: pointer;
+                }
+                
+                .modal-body {
+                    display: flex;
+                    height: 400px;
+                }
+                
+                .simulator-terminal {
+                    flex: 2;
+                    background: #1e1e1e;
+                    color: #f0f0f0;
+                    font-family: 'Courier New', monospace;
+                    padding: 1rem;
+                    overflow-y: auto;
+                }
+                
+                .terminal-output div {
+                    margin: 0.25rem 0;
+                }
+                
+                .terminal-input {
+                    display: flex;
+                    align-items: center;
+                    margin-top: 1rem;
+                }
+                
+                .prompt {
+                    color: #4af626;
+                    margin-right: 0.5rem;
+                }
+                
+                #simulator-input {
+                    flex: 1;
+                    background: transparent;
+                    border: none;
+                    color: white;
+                    font-family: 'Courier New', monospace;
+                    font-size: 1rem;
+                    outline: none;
+                }
+                
+                .simulator-help {
+                    flex: 1;
+                    background: #f6f8fa;
+                    padding: 1rem;
+                    overflow-y: auto;
+                    border-left: 1px solid #e1e4e8;
+                }
+                
+                @media (max-width: 768px) {
+                    .modal-body {
+                        flex-direction: column;
+                    }
+                    .simulator-help {
+                        border-left: none;
+                        border-top: 1px solid #e1e4e8;
+                    }
+                }
+            `;
+            
+            document.head.appendChild(style);
+            
+            // Handle modal close
+            modal.querySelector('.close-modal').addEventListener('click', () => {
+                document.body.removeChild(modal);
+                document.head.removeChild(style);
+            });
+            
+            // Handle escape key
+            modal.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.body.removeChild(modal);
+                    document.head.removeChild(style);
+                }
+            });
+            
+            // Handle simulator input
+            const input = modal.querySelector('#simulator-input');
+            const output = modal.querySelector('#terminal-output');
+            
+            const commands = {
+                'init': 'Initialized empty Git repository',
+                'status': 'On branch main\nnothing to commit, working tree clean',
+                'add file.txt': 'Added file.txt to staging area',
+                'commit -m "msg"': '[main abc1234] msg\n 1 file changed',
+                'log': 'abc1234 (HEAD -> main) Initial commit',
+                'help': 'Available commands: init, status, add, commit, log, quit'
+            };
+            
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const cmd = input.value.trim();
+                    input.value = '';
+                    
+                    // Add command to output
+                    const cmdLine = document.createElement('div');
+                    cmdLine.textContent = `$ ${cmd}`;
+                    cmdLine.style.color = '#4af626';
+                    output.appendChild(cmdLine);
+                    
+                    // Add response
+                    const response = document.createElement('div');
+                    if (cmd === 'quit') {
+                        document.body.removeChild(modal);
+                        document.head.removeChild(style);
+                        return;
+                    } else if (commands[cmd]) {
+                        response.textContent = commands[cmd];
+                    } else {
+                        response.textContent = `Command not found: ${cmd}. Type 'help' for available commands.`;
+                        response.style.color = '#ff6b6b';
+                    }
+                    
+                    output.appendChild(response);
+                    output.scrollTop = output.scrollHeight;
+                }
+            });
+            
+            // Focus input
+            input.focus();
+        });
+    });
+}
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+    
+    .completion-notification {
+        animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+    }
+    
+    .notification-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .notification-icon {
+        font-size: 1.2rem;
+    }
+    
+    .challenge-toggle {
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        color: var(--secondary-color);
+        font-weight: 600;
+    }
+    
+    .challenge-toggle:hover {
+        text-decoration: underline;
+    }
+    
+    .toggle-icon {
+        font-size: 0.875rem;
+    }
+    
+    .interactive-command {
+        background: var(--light-bg);
+        border: 1px solid #e1e4e8;
+        border-radius: 4px;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-family: 'SFMono-Regular', monospace;
+        transition: background 0.2s;
+    }
+    
+    .interactive-command:hover {
+        background: #e1e4e8;
+    }
+    
+    .launch-simulator {
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    
+    .launch-simulator:hover {
+        background: #5a32a3;
+    }
+`;
+document.head.appendChild(style);
+``
+
+404.md (Custom 404 page)
+
+```markdown
+---
+layout: default
+title: "404 - Page Not Found"
+permalink: /404.html
+---
+
+# 404 - Page Not Found 🔍
+
+![Lost in Git](https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif)
+
+## Oops! Looks like you've hit a merge conflict with reality.
+
+The page you're looking for doesn't exist. But don't worry - here are some helpful links:
+
+### 🏠 [Return to Homepage](/)
+### 📚 [Browse Tutorials](/tutorials/)
+### 🎮 [Try Challenges](/challenges/)
+### 🔍 [Search the Workbook](https://github.com/Gitdigital-products/GitDigital-Workbook/search)
+
+## While you're here, try these Git commands:
+
+```bash
+# To find missing files in Git:
+git status
+git log --all --oneline --grep="your search"
+git show :/"search term"
+
+# To recover lost work:
+git reflog
+git checkout lost-commit-hash
+``
+
+Need Help?
+
+· Check our FAQ
+· Report this issue
+· Join our Discussions
+
+---
+
+Remember: In Git, nothing is ever truly lost. The same applies here - just follow the links back to safety!
