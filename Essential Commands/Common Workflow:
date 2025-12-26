@@ -1,0 +1,15 @@
+# 1. Make changes to files
+echo "New feature" >> feature.txt
+
+# 2. Check what changed
+git status
+git diff
+
+# 3. Stage changes
+git add feature.txt
+
+# 4. Commit
+git commit -m "Add new feature"
+
+# 5. View history
+git log --graph --oneline --all
