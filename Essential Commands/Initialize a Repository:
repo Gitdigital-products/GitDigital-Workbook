@@ -1,0 +1,7 @@
+# Create new repository
+mkdir my-project
+cd my-project
+git init
+
+# Check status
+git status
