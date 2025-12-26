@@ -1,0 +1,41 @@
+
+Objective
+
+Practice recovering from mistakes.
+
+Requirements
+
+1. Make a commit with a typo
+2. Amend the commit to fix the typo
+3. Accidentally delete a file and restore it
+4. Unstage a file without losing changes
+5. Reset to a previous state
+
+Solution
+
+```bash
+# Setup
+mkdir undo-practice && cd undo-practice
+git init
+echo "Important data" > data.txt
+git add data.txt
+git commit -m "Intial commit"  # Typo!
+
+# 1. Amend commit
+git commit --amend -m "Initial commit"
+
+# 2. Delete and restore
+rm data.txt
+git status  # Shows deleted
+git checkout -- data.txt  # Restore
+
+# 3. Unstage a file
+echo "More data" > data2.txt
+git add data2.txt
+git reset HEAD data2.txt  # Unstage
+git status  # Shows as untracked
+
+# 4. Reset to previous
+echo "Temporary change" >> data.txt
+git add data.txt
+git reset --hard HEAD  # Discard all changes
