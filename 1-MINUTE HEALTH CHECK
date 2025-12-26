@@ -1,0 +1,24 @@
+# 1. Clone (or pull) the workbook
+git clone https://github.com/Gitdigital-products/GitDigital-Workbook.git
+cd GitDigital-Workbook
+
+# 2. Labels – do you have the agreed taxonomy?
+gh label list --limit 200 | grep -E "domain|type|priority|okr|risk"
+
+# 3. Issue templates – are all 5 YAML files present?
+ls -la .github/ISSUE_TEMPLATE/
+
+# 4. Workflows – are the 5 automation files there?
+ls -la .github/workflows/
+
+# 5. OKR data – is there a 2025-Q1.json and .md pair?
+ls -la data/okr/
+
+# 6. North-Star Project – does it exist and have custom fields?
+gh api repos/Gitdigital-products/GitDigital-Workbook/projects --jq '.[] | select(.name | contains("North-Star")) | {name, id}'
+
+# 7. Google Sheet secret – is it configured?
+gh secret list | grep GSHEET_API_KEY
+
+# 8. Last commit older than 7 days?
+git log -1 --format=%ct | xargs -I{} date -d @{} +%F
