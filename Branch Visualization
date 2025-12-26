@@ -1,0 +1,3 @@
+# See branch structure
+git log --graph --oneline --all
+git log --graph --pretty=format:'%C(auto)%h%d %s %C(cyan)(%cr) %C(bold blue)<%an>'
