@@ -1,0 +1,13 @@
+# Create the structure
+mkdir -p docs tutorials examples templates challenges resources
+mkdir -p .github/{ISSUE_TEMPLATE,workflows}
+mkdir -p tutorials/{01-git-basics,02-branching-strategies}
+
+# Create essential files
+touch README.md .gitignore CONTRIBUTING.md CODE_OF_CONDUCT.md LICENSE
+touch docs/getting-started.md
+
+# Add, commit and push
+git add .
+git commit -m "Initial commit: Setup repository structure"
+git push origin main
