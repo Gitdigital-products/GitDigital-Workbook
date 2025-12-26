@@ -1,0 +1,24 @@
+Create a simple project tracking your learning:
+
+1. Initialize a repo called git-learning-journal
+2. Create these files:
+   · notes.md - for your personal notes
+   · commands.md - for useful commands
+   · examples/ - directory for practice files
+3. Make at least 3 commits with meaningful messages
+4. Create a .gitignore file
+5. Push to a new GitHub repository
+
+🆘 Troubleshooting
+
+Common Issues:
+
+```bash
+# If you committed wrong email
+git commit --amend --reset-author
+
+# Recover deleted file
+git checkout -- deleted-file.txt
+
+# View changes before committing
+git diff --staged
