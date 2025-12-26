@@ -1,0 +1,9 @@
+# Unstage a file (keep changes in working directory)
+git add file.txt
+git reset HEAD file.txt
+
+# Discard changes in working directory
+git checkout -- file.txt
+
+# Amend the last commit
+git commit --amend -m "Improved commit message"
